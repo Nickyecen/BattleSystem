@@ -125,7 +125,7 @@
   (cond
     [(string=? (player-name current) name)
      (player-key current)]
-    [else (get-key-from name (cons current (rest list)))])))
+    [else (get-key-from name (rest list))])))
 
 (define (calc-next-key num count)
   (cond
