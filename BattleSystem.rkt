@@ -118,7 +118,7 @@
   (cond
     [(string=? (player-name current) name)
      (cons (make-player name key (player-image current)) (rest list))]
-    [else (update-player name key (cons current (rest list)))])))
+    [else (cons current (update-player name key (rest list)))])))
 
 (define (get-key-from name list)
   (let ((current (first list)))
