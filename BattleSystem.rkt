@@ -13,7 +13,7 @@
 ;; ##          CONSTANTES         ##
 ;; #################################
 
-(define PIC_SIZE 100)
+(define PIC_SIZE 175)
 
 (define BAE-PIC (bitmap "images/baelz.jpg"))
 
@@ -24,6 +24,7 @@
 
 (define LINE_SIZE 200)
 (define DEFAULT_SIZE 2)
+(define RATIO 0.5)
 
 ;; #################################
 ;; ##           FUNÇÕES           ##
@@ -46,9 +47,9 @@
     [(< num-battles 1) empty-image]
     [else (beside
            (above
-            (aux-championship (/ num-battles 2) (/ size 2) (- key (/ num-battles 2)) player-list)
-            (rectangle 0 (* (/ size num-battles) LINE_SIZE) "solid" "white")
-            (aux-championship (/ num-battles 2) (/ size 2) (+ key (/ num-battles 2)) player-list))
+            (aux-championship (/ num-battles 2) (* size RATIO) (- key (/ num-battles 2)) player-list)
+            (rectangle 0 (* (/ 1 num-battles) size LINE_SIZE) "solid" "white")
+            (aux-championship (/ num-battles 2) (* size RATIO) (+ key (/ num-battles 2)) player-list))
            (make-duel size (get-pic key player-list)))]))
 
 (define (get-pic key list)
