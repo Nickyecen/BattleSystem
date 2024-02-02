@@ -1,0 +1,193 @@
+#lang racket
+(require 2htdp/image)
+
+;; #################################
+;; ##          ESTRUTURAS         ##
+;; #################################
+
+(define-struct player (name key image))
+;(define-struct node (key isFilled left right))
+(define-struct championship (competitors image num-players))
+
+;; #################################
+;; ##          CONSTANTES         ##
+;; #################################
+
+(define PIC_SIZE 175)
+
+; Gen0
+(define AZKI-PIC (bitmap "images/hololive/gen0/azki.jpg"))
+(define AZKI (make-player "AZKi" 24 (scale (/ PIC_SIZE (image-width AZKI-PIC)) AZKI-PIC)))
+
+(define SORA-PIC (bitmap "images/hololive/gen0/sora.jpg"))
+(define SORA (make-player "Tokino Sora" 24 (scale (/ PIC_SIZE (image-width SORA-PIC)) SORA-PIC)))
+(define TOKINO SORA) (define SEISO SORA)
+
+(define MIKO-PIC (bitmap "images/hololive/gen0/miko.jpg"))
+(define MIKO (make-player "Sakura Miko" 24 (scale (/ PIC_SIZE (image-width MIKO-PIC)) MIKO-PIC)))
+(define SAKURA MIKO) (define MIKOCHI MIKO) (define BABY MIKO)
+
+(define ROBOCO-PIC (bitmap "images/hololive/gen0/roboco.jpg"))
+(define ROBOCO (make-player "Robocosan" 24 (scale (/ PIC_SIZE (image-width ROBOCO-PIC)) ROBOCO-PIC)))
+(define ROBO ROBOCO) (define ROBOCOSAN ROBOCO)
+
+(define SUISEI-PIC (bitmap "images/hololive/gen0/suisei.jpg"))
+(define SUISEI (make-player "Hoshimachi Suisei" 24 (scale (/ PIC_SIZE (image-width SUISEI-PIC)) SUISEI-PIC)))
+(define HOSHIMACHI SUISEI) (define PSYCHO SUISEI)
+
+; Gen1
+
+(define MEL-PIC (bitmap "images/hololive/gen1/mel.jpg"))
+(define MEL (make-player "Yozora Mel" 24 (scale (/ PIC_SIZE (image-width MEL-PIC)) MEL-PIC)))
+(define YOZORA MEL)
+
+(define AKI-PIC (bitmap "images/hololive/gen1/aki.jpg"))
+(define AKI (make-player "Aki Rosenthal" 24 (scale (/ PIC_SIZE (image-width AKI-PIC)) AKI-PIC)))
+(define ROSENTHAL AKI)
+
+(define HAACHAMA-PIC (bitmap "images/hololive/gen1/haachama.jpg"))
+(define HAACHAMA (make-player "Akai Haato" 24 (scale (/ PIC_SIZE (image-width HAACHAMA-PIC)) HAACHAMA-PIC)))
+(define AKAI HAACHAMA) (define HAATO HAACHAMA)
+
+(define MATSURI-PIC (bitmap "images/hololive/gen1/matsuri.jpg"))
+(define MATSURI (make-player "Natsuiro Matsuri" 24 (scale (/ PIC_SIZE (image-width MATSURI-PIC)) MATSURI-PIC)))
+(define NATSUIRO MATSURI) (define LOLICON MATSURI)
+
+(define FUBUKI-PIC (bitmap "images/hololive/gen1/matsuri.jpg"))
+(define FUBUKI (make-player "Shirakami Fubuki" 24 (scale (/ PIC_SIZE (image-width FUBUKI-PIC)) FUBUKI-PIC)))
+(define SHIRAKAMI FUBUKI) (define WOLF FUBUKI) (define FRIEND FUBUKI) (define FOX FUBUKI)
+
+; Gen2
+
+; Council / Promise
+(define BAE-PIC (bitmap "images/baelz.jpg"))
+(define BAE (make-player "Hakos Baelz" 24 (scale (/ PIC_SIZE (image-width BAE-PIC)) BAE-PIC)))
+(define BAELZ BAE) (define HAKOS BAE) (define RAT BAE)
+
+(define PLAYER2 (make-player "Player 2" 0 (rectangle PIC_SIZE PIC_SIZE "solid" "blue")))
+
+(define LINE_SIZE 200)
+(define DEFAULT_SIZE 2)
+(define RATIO 0.5)
+
+;; #################################
+;; ##           FUNÇÕES           ##
+;; #################################
+
+;; make-duel: Número -> Imagem
+;; Obj.: dado um tamanho, devolve um duelo desse tamanho
+(define (make-duel size pic)
+  (overlay/align
+   "left" "center"
+   (scale size pic)
+   (beside
+    (line 0 (* size LINE_SIZE) "black")
+    (line (* size LINE_SIZE) 0 "black"))))
+
+;; aux-championship: Numero Numero -> Imagem
+;; Obj.: dado um número de batalhas e o tamanho da imagem, devolve uma estrutura de batalhas
+(define (aux-championship num-battles size key player-list)
+  (cond
+    [(< num-battles 1) empty-image]
+    [else (beside
+           (above
+            (aux-championship (/ num-battles 2) (* size RATIO) (- key (/ num-battles 2)) player-list)
+            (rectangle 0 (* (/ 1 num-battles) size LINE_SIZE) "solid" "white")
+            (aux-championship (/ num-battles 2) (* size RATIO) (+ key (/ num-battles 2)) player-list))
+           (make-duel size (get-pic key player-list)))]))
+
+(define (get-pic key list)
+  (let ((filtered (filter (lambda (x) (= key (player-key x))) list)))
+    (cond
+      [(empty? filtered) empty-image]
+      [else (player-image (first filtered))])))
+
+;; make-championship-image: Numer Numero -> Imagem
+;; Obj.: dado um número de batalhas e o tamanho da imagem, devolve uma estrutura de batalhas de dois lados
+(define (make-championship-image num-battles size player-list)
+  (beside
+   (aux-championship (/ num-battles 2) (/ size 2) (/ num-battles 2) player-list)
+   (flip-horizontal
+    (aux-championship (/ num-battles 2) (/ size 2) (+ num-battles (/ num-battles 2)) player-list))))
+
+;; #################################
+;; ##           PROGRAMA          ##
+;; #################################
+
+(define main-champ (make-championship empty empty-image 0))
+
+;; #################################
+;; ##          FUNÇÕES DE         ##
+;; ##           EXECUÇÃO          ##
+;; #################################
+
+(define (draw) (championship-image main-champ))
+(define (get-players) (championship-competitors main-champ))
+(define (players) (map player-name (get-players)))
+
+(define (start num-players)
+  (set! main-champ
+        (make-championship
+         empty
+         (make-championship-image num-players DEFAULT_SIZE empty)
+         num-players))
+  (draw))
+
+
+(define (update-player-list player)
+  (set! main-champ
+        (make-championship
+         (cons
+          (make-player (player-name player) (+ (* 2 (length (get-players))) 1) (player-image player))
+          (championship-competitors main-champ))
+         (draw)
+         (championship-num-players main-champ))))
+
+(define (update-image)
+  (set! main-champ
+        (make-championship
+         (get-players)
+         (make-championship-image
+          (championship-num-players main-champ)
+          DEFAULT_SIZE
+          (championship-competitors main-champ))
+         (championship-num-players main-champ)))
+  (draw))
+
+(define (add player)
+  (update-player-list player)
+  (update-image))
+
+(define (update-player name key list)
+  (let ((current (first list)))
+  (cond
+    [(string=? (player-name current) name)
+     (cons (make-player name key (player-image current)) (rest list))]
+    [else (cons current (update-player name key (rest list)))])))
+
+(define (get-key-from name list)
+  (let ((current (first list)))
+  (cond
+    [(string=? (player-name current) name)
+     (player-key current)]
+    [else (get-key-from name (rest list))])))
+
+(define (calc-next-key num count)
+  (cond
+    [(= num 0) (expt 2 count)]
+    [(even? num) (calc-next-key (/ num 2) (+ count 1))]
+    [else (* (expt -1 (floor (/ num 2))) (expt 2 count))]))
+
+(define (next-key num)
+  (+ num (calc-next-key num 0)))
+
+(define (win player)
+  (set! main-champ
+        (make-championship
+         (update-player (player-name player)
+                        (next-key (get-key-from (player-name player) (get-players)))
+                        (get-players))
+         (draw)
+         (championship-num-players main-champ)))
+  (update-image)
+  (draw))
